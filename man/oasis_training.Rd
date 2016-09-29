@@ -4,26 +4,31 @@
 \alias{oasis_training}
 \title{OASIS Training}
 \usage{
-oasis_training(..., remove_preproc = FALSE)
+oasis_training(..., formula = GoldStandard ~ FLAIR_10 * FLAIR + FLAIR_20 *
+  FLAIR + PD_10 * PD + PD_20 * PD + T2_10 * T2 + T2_20 * T2 + T1_10 * T1 + T1_20
+  * T1, remove_preproc = FALSE)
 }
 \arguments{
-\item{...}{\code{data.frame}(s) produced by the 
+\item{...}{\code{data.frame}(s) produced by the
 \code{\link{oasis_train_dataframe}} function}
 
-\item{remove_preproc}{a logical stating if preprocessed volumes 
-need to be removed from the \code{data.frame}s}
+\item{formula}{formula to be fit by glm model}
+
+\item{remove_preproc}{a logical stating if \code{oasis_dataframe} needs to be
+extracted from the list of objects.  Will call \code{list$oasis_dataframe}}
 }
 \value{
-Returns a \code{glm} object containing the trained OASIS 
+Returns a \code{glm} object containing the trained OASIS
 coefficients to be used by the function \code{\link{oasis_predict}}.
 }
 \description{
-This function trains the OASIS model from a \code{data.frame} 
-produced by the function \code{\link{oasis_train_dataframe}}
+This function trains the OASIS model from a \code{data.frame}
+produced by an element from the output of the
+function \code{\link{oasis_train_dataframe}}
 }
 \examples{
 \dontrun{
-my_oasis_model <- oasis_training(oasis_dataframe_1, oasis_dataframe_2)  
+my_oasis_model <- oasis_training(oasis_dataframe_1, oasis_dataframe_2)
 }
 }
 
