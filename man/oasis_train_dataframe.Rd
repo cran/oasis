@@ -7,7 +7,8 @@
 oasis_train_dataframe(flair, t1, t2, pd = NULL, gold_standard = NULL,
   brain_mask = NULL, preproc = FALSE, normalize = TRUE, slices = NULL,
   orientation = c("axial", "coronal", "sagittal"), return_preproc = FALSE,
-  cores = 1, verbose = TRUE, eroder = c("fsl", "oasis"))
+  cores = 1, sigma = c(10, 20), verbose = TRUE, eroder = c("fsl",
+  "oasis"))
 }
 \arguments{
 \item{flair}{FLAIR volume of class \code{\link{nifti}}}
@@ -46,17 +47,22 @@ the preprocessed images should be returned}
 \item{cores}{numeric indicating the number of cores to be used
 (no more than 4 is useful for this software implementation)}
 
+\item{sigma}{Sigmas used to smooth the data, default is 10,20}
+
 \item{verbose}{print diagnostic output}
 
-\item{eroder}{Should \code{\link{fslerode}} or \code{\link{oasis_erode}} be used}
+\item{eroder}{Should \code{\link{fslerode}} or \code{\link{oasis_erode}} 
+be used}
 }
 \value{
 If \code{return_preproc = FALSE} the function returns a
 \code{data.frame} for use with the \code{\link{oasis_training}} function.
 Otherwise, the function returns a list containing:
-a \code{data.frame} for use with the \code{\link{oasis_training}} function,
+a \code{data.frame} for use with the \code{\link{oasis_training}} 
+function,
 the FLAIR volume, the T1 volume, the T2 volume,
-the PD volume, the brain mask for the subject, and the voxel selection mask.
+the PD volume, the brain mask for the subject, and the voxel selection 
+mask.
 }
 \description{
 This function creates the training vectors from a single MRI
@@ -66,7 +72,41 @@ for the data (or the user can supply a brain mask),
 can preprocess the data, and the user may supply already normalized data
 if they wish to use an alternative normalization method.
 }
+\examples{
+library(neurobase)
+dl_file = function(url) {
+   tfile = tempfile(fileext = ".nii.gz")
+   req <- httr::GET(url,
+   httr::write_disk(path = tfile))
+   httr::stop_for_status(req)
+   tfile
+}
+in_ci <- function() {
+ nzchar(Sys.getenv("CI"))
+}
+on_cran = function() {
+ identical(Sys.getenv("NOT_CRAN"), "false")
+} 
+if (in_ci() || on_cran()) {
+  if (fslr::have.fsl() && require(httr)) {
+    mods = c("FLAIR", "T1W", "T2W", "consensus_gt", "brainmask")
+    base_url = file.path(
+      "https://raw.githubusercontent.com/muschellij2/open_ms_data", 
+      "master/cross_sectional/coregistered/patient01/")
+    files = paste0(base_url, mods, ".nii.gz")
+    files = sapply(files, dl_file)
+    names(files) = mods
+
+    flair <- readnii(files["FLAIR"])
+    t1 <- readnii(files["T1W"])
+    t2 <- readnii(files["T2W"])
+    brain_mask <- readnii(files["brainmask"])
+    gold_standard = readnii(files["consensus_gt"])
+    oasis_preprocessed_data <- oasis_train_dataframe(flair, t1, t2, 
+      brain_mask = brain_mask, gold_standard = gold_standard)
+  } 
+}
+}
 \seealso{
 \code{\link{oasis_training}}
 }
-

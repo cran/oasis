@@ -2,9 +2,13 @@
 % Please edit documentation in R/voxel_selection.R
 \name{voxel_selection}
 \alias{voxel_selection}
+\alias{voxel_selection_with_erosion}
 \title{Voxel Selection Procedure}
 \usage{
 voxel_selection(flair, brain_mask, cutoff)
+
+voxel_selection_with_erosion(flair, brain_mask, verbose = TRUE,
+  eroder = c("fsl", "oasis"))
 }
 \arguments{
 \item{flair}{FLAIR volume of class \code{\link{nifti}}}
@@ -13,6 +17,11 @@ voxel_selection(flair, brain_mask, cutoff)
 
 \item{cutoff}{the percentile cutoff for the thresholding,
 passed to \code{\link{quantile}}}
+
+\item{verbose}{print diagnostic output}
+
+\item{eroder}{Should \code{\link{fslerode}} or \code{\link{oasis_erode}} 
+be used}
 }
 \value{
 Returns the voxel selection mask as an object of class \code{\link{nifti}}.
@@ -27,10 +36,11 @@ library(fslr)
 library(oasis)
 niis = tempfile(fileext = ".nii.gz")
 if (require(httr)) {
-   url = paste0("https://dl.dropbox.com/u/2785709/brainder",
-   "/software/flair/templates/GG-853-FLAIR-2.0mm.nii.gz")
+   url = paste0("https://s3.us-east-2.amazonaws.com/brainder/software/",
+   "flair/templates/GG-853-FLAIR-2.0mm.nii.gz")
    req <- httr::GET(url,
    httr::write_disk(path = niis))
+   httr::stop_for_status(req)
 
  flair <- readnii(niis)
  if (have.fsl()) {
@@ -47,4 +57,3 @@ if (require(httr)) {
    brain_mask, cutoff = .85)
 }
 }
-
